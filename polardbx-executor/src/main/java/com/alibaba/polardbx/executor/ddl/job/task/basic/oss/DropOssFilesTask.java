@@ -64,7 +64,6 @@ public class DropOssFilesTask extends BaseGmsTask {
     protected void executeImpl(Connection metaDbConnection, ExecutionContext executionContext) {
         updateSupportedCommands(true, false, metaDbConnection);
         Engine fileEngine = Engine.of(engine);
-        long stamp = FileSystemManager.readLockWithTimeOut(fileEngine);
         try (Connection connection = MetaDbUtil.getConnection()) {
             FileSystemGroup fileSystemGroup = FileSystemManager.getFileSystemGroup(fileEngine);
             TableInfoManager tableInfoManager = new TableInfoManager();
@@ -113,8 +112,6 @@ public class DropOssFilesTask extends BaseGmsTask {
             }
         } catch (Throwable e) {
             throw GeneralUtil.nestedException(e);
-        } finally {
-            FileSystemManager.unlockRead(fileEngine, stamp);
         }
 
         FailPoint.injectRandomExceptionFromHint(executionContext);

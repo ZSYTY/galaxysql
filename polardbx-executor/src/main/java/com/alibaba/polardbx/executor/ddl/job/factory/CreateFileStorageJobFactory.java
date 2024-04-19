@@ -37,21 +37,27 @@ public class CreateFileStorageJobFactory extends DdlJobFactory {
     private ExecutionContext executionContext;
     private Engine engine;
     private Map<FileStorageInfoKey, String> items;
+    private Map<FileStorageInfoKey.AzureConnectionStringKey, String> azureItems;
 
     public CreateFileStorageJobFactory(
         Engine engine, Map<FileStorageInfoKey, String> items,
+        Map<FileStorageInfoKey.AzureConnectionStringKey, String> azureItems,
         ExecutionContext executionContext) {
         this.executionContext = executionContext;
         this.engine = engine;
         this.items = items;
+        this.azureItems = azureItems;
     }
 
     @Override
     protected void validate() {
         if (!items.containsKey(FileStorageInfoKey.FILE_URI)) {
-            throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS, "Should contain FILE_URI in with!");
+            if (Engine.ABS != engine) {
+                throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS, "Should contain FILE_URI in with!");
+            }
         }
-        if (engine.name().equalsIgnoreCase("OSS")) {
+        switch (engine) {
+        case OSS: {
             if (!items.containsKey(FileStorageInfoKey.ENDPOINT)) {
                 throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS, "Should contain ENDPOINT in with!");
             }
@@ -69,13 +75,48 @@ public class CreateFileStorageJobFactory extends DdlJobFactory {
                 throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS,
                     "Should contain ACCESS_KEY_SECRET in with!");
             }
+            break;
+        }
+        case ABS: {
+            if (!items.containsKey(FileStorageInfoKey.AZURE_CONNECTION_STRING)) {
+                throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS,
+                    "Should contain AZURE_CONNECTION_STRING in with!");
+            }
+            if (!items.containsKey(FileStorageInfoKey.AZURE_CONTAINER_NAME)) {
+                throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS,
+                    "Should contain AZURE_CONTAINER_NAME in with!");
+            }
+
+            // check connection string
+            if (!azureItems.containsKey(FileStorageInfoKey.AzureConnectionStringKey.DefaultEndpointsProtocol)) {
+                throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS,
+                    "Should contain DefaultEndpointsProtocol in connection string!");
+            }
+            if (!azureItems.containsKey(FileStorageInfoKey.AzureConnectionStringKey.AccountName)) {
+                throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS,
+                    "Should contain AccountName in connection string!");
+            }
+            if (!azureItems.containsKey(FileStorageInfoKey.AzureConnectionStringKey.AccountKey)) {
+                throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS,
+                    "Should contain AccountKey in connection string!");
+            }
+            if (!azureItems.containsKey(FileStorageInfoKey.AzureConnectionStringKey.EndpointSuffix)) {
+                throw new TddlRuntimeException(ErrorCode.ERR_EXECUTE_ON_OSS,
+                    "Should contain EndpointSuffix in connection string!");
+            }
+            break;
+        }
+        default:
+            break;
         }
     }
 
     @Override
     protected ExecutableDdlJob doCreate() {
         ExecutableDdlJob executableDdlJob = new ExecutableDdlJob();
-        executableDdlJob.addTask(new CreateFileStorageTask(executionContext.getSchemaName(), engine.name(), items));
+        executableDdlJob.addTask(
+            new CreateFileStorageTask(executionContext.getSchemaName(), engine.name(), items, azureItems)
+        );
         return executableDdlJob;
     }
 

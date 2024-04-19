@@ -130,7 +130,6 @@ public class BufferPoolManager {
         return cache.get(
             new Key(fileMeta.getLogicalTableSchema(), fileMeta.getLogicalTableName(), fileMeta.getFileName(), column),
             () -> {
-                long stamp = FileSystemManager.readLockWithTimeOut(ossReadOption.getEngine());
                 try {
                     FileSystem fileSystem = FileSystemManager.getFileSystemGroup(ossReadOption.getEngine()).getMaster();
 
@@ -181,8 +180,6 @@ public class BufferPoolManager {
                     return result;
                 } catch (Throwable e) {
                     throw GeneralUtil.nestedException(e);
-                } finally {
-                    FileSystemManager.unlockRead(ossReadOption.getEngine(), stamp);
                 }
             });
     }

@@ -2579,10 +2579,15 @@ public class FastSqlToCalciteNodeVisitor extends CalciteVisitor implements MySql
                 break;
             case "'load_local_disk'":
                 table.setEngine(Engine.LOCAL_DISK);
+                break;
             case "'load_nfs'":
                 table.setEngine(Engine.NFS);
+                break;
             case "'load_external_disk'":
                 table.setEngine(Engine.EXTERNAL_DISK);
+                break;
+            case "'load_abs'":
+                table.setEngine(Engine.ABS);
                 break;
             default:
                 break;

@@ -54,7 +54,6 @@ public class DeleteFileStorageDirectoryTask extends BaseDdlTask {
     protected void executeImpl(Connection metaDbConnection, ExecutionContext executionContext) {
         updateSupportedCommands(true, false, metaDbConnection);
         Engine fileEngine = Engine.of(engine);
-        long stamp = FileSystemManager.readLockWithTimeOut(fileEngine);
         try {
             FileSystemGroup fileSystemGroup = FileSystemManager.getFileSystemGroup(fileEngine);
             if(fileSystemGroup.exists(directory)) {
@@ -62,8 +61,6 @@ public class DeleteFileStorageDirectoryTask extends BaseDdlTask {
             }
         } catch (Throwable e) {
             throw GeneralUtil.nestedException(e);
-        } finally {
-            FileSystemManager.unlockRead(fileEngine, stamp);
         }
 
         FailPoint.injectRandomExceptionFromHint(executionContext);

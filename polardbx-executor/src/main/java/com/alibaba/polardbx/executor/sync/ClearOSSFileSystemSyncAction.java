@@ -17,8 +17,10 @@
 package com.alibaba.polardbx.executor.sync;
 
 import com.alibaba.polardbx.common.Engine;
+import com.alibaba.polardbx.common.oss.filesystem.cache.FileMergeCacheConfig;
 import com.alibaba.polardbx.common.oss.filesystem.cache.FileMergeCachingFileSystem;
 import com.alibaba.polardbx.common.properties.ConnectionProperties;
+import com.alibaba.polardbx.common.properties.FileConfig;
 import com.alibaba.polardbx.common.utils.GeneralUtil;
 import com.alibaba.polardbx.executor.archive.reader.BufferPoolManager;
 import com.alibaba.polardbx.executor.cursor.ResultCursor;
@@ -52,9 +54,9 @@ public class ClearOSSFileSystemSyncAction implements ISyncAction {
     public ResultCursor sync() {
         FileSystemGroup fileSystemGroup = FileSystemManager.getFileSystemGroup(Engine.OSS);
         if (fileSystemGroup != null) {
-            Map<String, Long> configs = fetchConfig();
+            FileMergeCacheConfig configs = FileConfig.getInstance().getMergeCacheConfig();
 
-            if (configs == null || configs.isEmpty()) {
+            if (configs == null) {
                 // just clear
                 ((FileMergeCachingFileSystem) fileSystemGroup.getMaster()).getCacheManager().clear();
                 for (FileSystem slave : fileSystemGroup.getSlaves()) {

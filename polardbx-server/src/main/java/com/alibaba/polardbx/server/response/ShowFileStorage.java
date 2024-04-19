@@ -95,7 +95,7 @@ public class ShowFileStorage {
         }
 
         // write rows
-        List<byte[][]> resultList = FileStoreStatistics.generateFileStoragePacket();
+        List<byte[][]> resultList = FileStoreStatistics.generateFileStoragePacket(c.getConnectionVariables());
         if (resultList != null) {
             for (byte[][] results : resultList) {
                 RowDataPacket row = new RowDataPacket(FIELD_COUNT);

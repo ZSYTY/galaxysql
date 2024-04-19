@@ -55,7 +55,6 @@ public class CloseFileStorageTask extends BaseDdlTask {
         updateSupportedCommands(true, false, metaDbConnection);
         Engine fileEngine = Engine.of(engine);
         CommonMetaChanger.invalidateBufferPool();
-        long stamp = FileSystemManager.readLockWithTimeOut(fileEngine);
         try {
             FileStorageInfoAccessor fileStorageInfoAccessor = new FileStorageInfoAccessor();
             fileStorageInfoAccessor.setConnection(metaDbConnection);
@@ -70,8 +69,6 @@ public class CloseFileStorageTask extends BaseDdlTask {
             configListenerAccessor.updateOpVersion(MetaDbDataIdBuilder.getFileStorageInfoDataId());
         } catch (Throwable e) {
             throw GeneralUtil.nestedException(e);
-        } finally {
-            FileSystemManager.unlockRead(fileEngine, stamp);
         }
 
         FailPoint.injectRandomExceptionFromHint(executionContext);

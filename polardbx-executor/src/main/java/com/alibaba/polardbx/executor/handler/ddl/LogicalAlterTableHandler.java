@@ -576,6 +576,7 @@ public class LogicalAlterTableHandler extends LogicalCommonDdlHandler {
             case LOCAL_DISK:
             case EXTERNAL_DISK:
             case NFS:
+            case ABS:
                 // innodb -> file store
                 return new LogicalAlterTableEngineHandler(repo, sourceEngine, targetEngine)
                     .buildDdlJob(logicalDdlPlan, executionContext);
@@ -588,6 +589,7 @@ public class LogicalAlterTableHandler extends LogicalCommonDdlHandler {
         case OSS:
         case LOCAL_DISK:
         case EXTERNAL_DISK:
+        case ABS:
         case NFS: {
             switch (targetEngine) {
             case INNODB:

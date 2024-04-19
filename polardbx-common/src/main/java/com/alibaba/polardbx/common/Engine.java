@@ -31,6 +31,7 @@ public enum Engine {
     LOCAL_DISK,
     EXTERNAL_DISK,
     S3,
+    ABS,
     OSS,
     NFS;
 
@@ -55,6 +56,7 @@ public enum Engine {
         case EXTERNAL_DISK:
         case S3:
         case NFS:
+        case ABS:
             return true;
         default:
             return false;

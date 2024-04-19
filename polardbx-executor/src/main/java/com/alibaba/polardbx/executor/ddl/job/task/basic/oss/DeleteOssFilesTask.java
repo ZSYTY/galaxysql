@@ -55,7 +55,6 @@ public class DeleteOssFilesTask extends BaseDdlTask {
     protected void executeImpl(Connection metaDbConnection, ExecutionContext executionContext) {
         updateSupportedCommands(true, false, metaDbConnection);
         Engine fileEngine = Engine.of(engine);
-        long stamp = FileSystemManager.readLockWithTimeOut(fileEngine);
         try {
             FileStorageMetaStore fileStorageMetaStore = new FileStorageMetaStore(fileEngine);
             fileStorageMetaStore.setConnection(metaDbConnection);
@@ -68,8 +67,6 @@ public class DeleteOssFilesTask extends BaseDdlTask {
             }
         } catch (Throwable e) {
             throw GeneralUtil.nestedException(e);
-        } finally {
-            FileSystemManager.unlockRead(fileEngine, stamp);
         }
 
         FailPoint.injectRandomExceptionFromHint(executionContext);

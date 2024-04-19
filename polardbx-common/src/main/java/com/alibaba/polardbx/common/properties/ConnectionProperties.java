@@ -2149,6 +2149,16 @@ public class ConnectionProperties {
 
     public static final String OSS_ORC_MAX_MERGE_DISTANCE = "OSS_ORC_MAX_MERGE_DISTANCE";
 
+    public static final String OSS_FS_ENABLE_CACHED = "OSS_FS_ENABLE_CACHED";
+
+    public static final String OSS_FS_CACHED_FLUSH_THREAD_NUM = "OSS_FS_CACHED_FLUSH_THREAD_NUM";
+
+    public static final String OSS_FS_MAX_CACHED_GB = "OSS_FS_MAX_CACHED_GB";
+
+    public static final String OSS_FS_USE_BYTES_CACHE = "OSS_FS_USE_BYTES_CACHE";
+
+    public static final String OSS_FS_MEMORY_RATIO_OF_BYTES_CACHE = "OSS_FS_MEMORY_RATIO_OF_BYTES_CACHE";
+
     public static final String FILE_LIST = "FILE_LIST";
 
     public static final String FILE_PATTERN = "FILE_PATTERN";

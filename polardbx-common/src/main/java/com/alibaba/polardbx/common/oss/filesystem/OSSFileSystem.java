@@ -68,7 +68,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 /**
  * To access OSS blob system in a filesystem style.
  */
-public class OSSFileSystem extends FileSystem {
+public class OSSFileSystem extends FileSystem implements RateLimitable {
     private static final Logger LOG =
         LoggerFactory.getLogger(OSSFileSystem.class);
     private URI uri;
@@ -335,6 +335,7 @@ public class OSSFileSystem extends FileSystem {
         }
     }
 
+    @Override
     public FileSystemRateLimiter getRateLimiter() {
         return this.rateLimiter;
     }

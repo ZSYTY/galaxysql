@@ -423,6 +423,8 @@ public class SqlCreateTable extends SqlCreate {
                 || trimmedComment.equalsIgnoreCase("load_s3")
                 || trimmedComment.equalsIgnoreCase("load_local_disk")
                 || trimmedComment.equalsIgnoreCase("load_nfs")
+                || trimmedComment.equalsIgnoreCase("load_s3")
+                || trimmedComment.equalsIgnoreCase("load_abs")
                 || trimmedComment.equalsIgnoreCase("load_external_disk");
         }
 

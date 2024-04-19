@@ -17,72 +17,60 @@
 package com.alibaba.polardbx.gms.engine;
 
 import com.alibaba.polardbx.common.Engine;
-import com.alibaba.polardbx.common.oss.filesystem.FileSystemRateLimiter;
-import com.alibaba.polardbx.common.oss.filesystem.GuavaFileSystemRateLimiter;
-import com.alibaba.polardbx.common.oss.filesystem.NFSFileSystem;
 import com.alibaba.polardbx.common.oss.filesystem.cache.CacheManager;
-import com.alibaba.polardbx.common.oss.filesystem.cache.CacheType;
 import com.alibaba.polardbx.common.oss.filesystem.cache.FileMergeCacheManager;
 import com.alibaba.polardbx.common.oss.filesystem.cache.FileMergeCachingFileSystem;
-import com.alibaba.polardbx.common.properties.ConnectionParams;
-import com.alibaba.polardbx.common.properties.ConnectionProperties;
 import com.alibaba.polardbx.common.properties.FileConfig;
 import com.alibaba.polardbx.common.utils.GeneralUtil;
-import com.alibaba.polardbx.common.utils.time.parser.StringNumericParser;
-import com.alibaba.polardbx.gms.config.impl.InstConfUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 
-import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
-import java.util.Optional;
 
-public class NFSInstanceInitializer {
-
-    /**
-     * nfs://server<:port>/path
-     */
+public class ExternalDiskInstanceInitializer {
 
     public String uri;
     public CachePolicy cachePolicy;
 
-    public NFSInstanceInitializer() {
+    public ExternalDiskInstanceInitializer() {
 
     }
 
-    public static NFSInstanceInitializer newBuilder() {
-        return new NFSInstanceInitializer();
+    public static ExternalDiskInstanceInitializer newBuilder() {
+        return new ExternalDiskInstanceInitializer();
     }
 
-    public NFSInstanceInitializer uri(String uri) {
+    public ExternalDiskInstanceInitializer uri(String uri) {
         this.uri = uri;
         return this;
     }
 
-    public NFSInstanceInitializer cachePolicy(CachePolicy cachePolicy) {
+    public ExternalDiskInstanceInitializer cachePolicy(CachePolicy cachePolicy) {
         this.cachePolicy = cachePolicy;
         return this;
     }
 
-    public FileSystem initialize() throws IOException {
+    public FileSystem initialize() {
+        Configuration configuration = new Configuration();
+        configuration.setBoolean("fs.file.impl.disable.cache", true);
+
         CacheManager cacheManager = null;
-        FileSystem nfsFileSystem = null;
+        FileSystem externalFileSystem = null;
         try {
-            cacheManager = FileMergeCacheManager.createMergeCacheManager(Engine.NFS);
-            URI nfsFileUri = URI.create(this.uri);
-            nfsFileSystem = createNFSFileSystem(
-                nfsFileUri,
-                cachePolicy == CachePolicy.META_CACHE || cachePolicy == CachePolicy.META_AND_DATA_CACHE
-            );
+            cacheManager = FileMergeCacheManager.createMergeCacheManager(Engine.EXTERNAL_DISK);
+            URI externalUri = URI.create(this.uri);
             Configuration factoryConfig = new Configuration();
             final boolean validationEnabled = FileConfig.getInstance().getCacheConfig().isValidationEnabled();
 
+            externalFileSystem = FileSystem.get(
+                externalUri, configuration
+            );
+
             return new FileMergeCachingFileSystem(
-                nfsFileSystem.getUri(),
+                externalUri,
                 factoryConfig,
                 cacheManager,
-                nfsFileSystem,
+                externalFileSystem,
                 validationEnabled,
                 true
             );
@@ -94,22 +82,16 @@ public class NFSInstanceInitializer {
                     // ignore
                 }
             }
-            if (nfsFileSystem != null) {
+            if (externalFileSystem != null) {
                 try {
-                    nfsFileSystem.close();
+                    externalFileSystem.close();
                 } catch (Throwable t1) {
                     // ignore
+
                 }
             }
-            throw GeneralUtil.nestedException("Fail to create NFS file system!", t);
+
+            throw GeneralUtil.nestedException("Fail to create external disk file system!", t);
         }
     }
-
-    private synchronized NFSFileSystem createNFSFileSystem(URI nfsUri, boolean enableCache) throws IOException {
-        FileSystemRateLimiter rateLimiter = FileSystemUtils.newRateLimiter();
-        NFSFileSystem nfsFileSystem = new NFSFileSystem(enableCache, rateLimiter);
-        nfsFileSystem.initialize(nfsUri, new Configuration());
-        return nfsFileSystem;
-    }
 }
-

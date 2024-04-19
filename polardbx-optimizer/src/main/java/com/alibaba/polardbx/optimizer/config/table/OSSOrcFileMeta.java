@@ -171,7 +171,6 @@ public class OSSOrcFileMeta extends FileMeta {
                 if (stripeColumnMetaMap == null) {
                     Map<String, Map<Long, StripeColumnMeta>> stripeColumnMetaMapTmp = TreeMaps.caseInsensitiveMap();
 
-                    long stamp = FileSystemManager.readLockWithTimeOut(engine);
                     // stripStatistic
                     List<StripeStatistics> stripeStatistics = null;
                     List<StripeInformation> stripeInformations = null;
@@ -188,8 +187,6 @@ public class OSSOrcFileMeta extends FileMeta {
                         }
                     } catch (Throwable t) {
                         throw GeneralUtil.nestedException(t);
-                    } finally {
-                        FileSystemManager.unlockRead(engine, stamp);
                     }
 
                     if (stripeStatistics != null && stripeInformations != null) {
